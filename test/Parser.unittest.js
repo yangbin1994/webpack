@@ -191,6 +191,13 @@ describe("Parser", () => {
 				ijksub: ["test"]
 			}
 		],
+		"new Foo(...)": [
+			function() {
+				new xyz("membertest");
+			}, {
+				xyz: ["membertest"]
+			}
+		],
 	};
 
 	Object.keys(testCases).forEach((name) => {
@@ -235,6 +242,11 @@ describe("Parser", () => {
 			testParser.plugin("expression memberExpr", (expr) => {
 				if(!testParser.state.expressions) testParser.state.expressions = [];
 				testParser.state.expressions.push(expr.name);
+				return true;
+			});
+			testParser.plugin("new xyz", (expr) => {
+				if(!testParser.state.xyz) testParser.state.xyz = [];
+				testParser.state.xyz.push(testParser.parseString(expr.arguments[0]));
 				return true;
 			});
 			const actual = testParser.parse(source);
@@ -293,6 +305,16 @@ describe("Parser", () => {
 			"1": "number=1",
 			"1 + 3": "number=4",
 			"3 - 1": "number=2",
+			"2 * 3": "number=6",
+			"8 / 2": "number=4",
+			"2 ** 3": "number=8",
+			"12 & 5": "number=4",
+			"12 | 5": "number=13",
+			"12 ^ 5": "number=9",
+			"9 >>> 2": "number=2",
+			"9 >> 2": "number=2",
+			"9 << 2": "number=36",
+			"~3": "number=-4",
 			"1 == 1": "bool=true",
 			"1 === 1": "bool=true",
 			"3 != 1": "bool=true",
